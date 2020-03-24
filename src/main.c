@@ -21,7 +21,9 @@ double display_size = 0.7;
 int display_number = 1;
 
 GLfloat angle_h = 0.0;
+GLfloat angle_v = 0.0;
 int prev_x = -1;
+int prev_y = -1;
 
 double * datas;
 double * x;
@@ -204,14 +206,15 @@ void renderFunction(void){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glLoadIdentity();
-	glRotatef(angle_h, 0, 0, 1);
+	glRotatef(angle_h, 0, 1, 0);
+	glRotatef(angle_v, 1, 0, 0);
 
 	// Carré extérieur
 	glBegin(GL_LINE_LOOP);
-	glVertex2f(-display_size,-display_size);
-	glVertex2f(display_size,-display_size);
-	glVertex2f(display_size,display_size);
-	glVertex2f(-display_size,display_size);
+	glVertex2f(-display_size, -display_size);
+	glVertex2f( display_size, -display_size);
+	glVertex2f( display_size,  display_size);
+	glVertex2f(-display_size,  display_size);
 	glEnd();
 	// Label iso
 	char ch[20];
@@ -254,7 +257,7 @@ void renderFunction(void){
 					handleCase4(iso, i, j);
 					break;
 				default:
-					printf("error -> %d,%d \n",i,j);
+					fprintf(stderr, "error -> i:%d, j:%d \n",i,j);
 			}
 		}
 	}
@@ -286,12 +289,23 @@ void keyboard(unsigned char key, int x, int y){
 	glutPostRedisplay();
 }
 
+void passiveMotion(int x, int y){
+	prev_x = x;
+	prev_y = y;
+}
+
 void motion(int x, int y){
 	if (prev_x!=-1){
 		angle_h += x-prev_x;
 		glutPostRedisplay();
 	}
+
+	if (prev_y!=-1){
+		angle_v += y-prev_y;
+		glutPostRedisplay();
+	}
 	prev_x = x;
+	prev_y = y;
 }
 
 void initialize(int argc, char* argv[]){
@@ -329,6 +343,7 @@ void initWindow(int argc, char* argv[]){
 	glutDisplayFunc(renderFunction);
 	glutKeyboardFunc(keyboard);
 	glutMotionFunc(motion);
+	glutPassiveMotionFunc(passiveMotion);
 }
 
 void resizeFunction(int width, int height){
