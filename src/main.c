@@ -12,6 +12,7 @@ void renderFunction(void);
 void keyboard(unsigned char, int, int);
 void initData(char*);
 double interpolatePos(double, double, double, double, double);
+void drawIsoWith(double);
 
 int currentWidth = 800;
 int currentHeight = 600;
@@ -26,10 +27,14 @@ int prev_x = -1;
 int prev_y = -1;
 
 double * datas;
+double maxi;
+double mini;
 double * x;
 double * y;
-double iso = 2.5;
+int nb_iso = 5;
 int size = 0;
+
+double display_Z_correction = 0.5;
 
 int main(int argc,char* argv[]){
 	initialize(argc, argv);
@@ -56,10 +61,15 @@ void initData(char* path){
 	y = malloc(sizeof(double) * nb_value);
 
 	int i = 0;
-	while(fgets(ch, sizeof(ch), fp) && i < nb_value){
+	fgets(ch, sizeof(ch), fp);
+	mini = atof(ch);
+	maxi = atof(ch);
+	do {
 		datas[i] = atof(ch);
+		mini = mini < datas[i] ? mini : datas[i];
+		maxi = maxi > datas[i] ? maxi : datas[i];
 		i++;
-	}
+	 } while(fgets(ch, sizeof(ch), fp) && i < nb_value);
 	double step = (display_size*2) / (size-1);
 	for (int i = 0 ; i < size ; i++){
 		for (int j = 0 ; j < size ; j++){
@@ -99,25 +109,29 @@ void handleCase2(double v, int i, int j){
 	int id_bd = (i+1)*size+j;
 	glBegin(GL_LINES);
 	if ((datas[id_hg]-v > 0 && datas[id_hd]-v < 0) || (datas[id_hg]-v < 0 && datas[id_hd]-v > 0)){
-		glVertex2f(
-				interpolatePos(x[id_hg], x[id_hd], iso, datas[id_hg], datas[id_hd]),
-				interpolatePos(y[id_hg], y[id_hd], iso, datas[id_hg], datas[id_hd])
+		glVertex3f(
+				interpolatePos(x[id_hg], x[id_hd], v, datas[id_hg], datas[id_hd]),
+				interpolatePos(y[id_hg], y[id_hd], v, datas[id_hg], datas[id_hd]),
+				v/maxi - display_Z_correction
 			  );
 	}else{
-		glVertex2f(
-				interpolatePos(x[id_bg], x[id_bd], iso, datas[id_bg], datas[id_bd]),
-				interpolatePos(y[id_bg], y[id_bd], iso, datas[id_bg], datas[id_bd])
+		glVertex3f(
+				interpolatePos(x[id_bg], x[id_bd], v, datas[id_bg], datas[id_bd]),
+				interpolatePos(y[id_bg], y[id_bd], v, datas[id_bg], datas[id_bd]),
+				v/maxi - display_Z_correction
 			  );
 	}
 	if ((datas[id_hg]-v > 0 && datas[id_bg]-v < 0) || (datas[id_hg]-v < 0 && datas[id_bg]-v > 0)){
-		glVertex2f(
-				interpolatePos(x[id_hg], x[id_bg], iso, datas[id_hg], datas[id_bg]),
-				interpolatePos(y[id_hg], y[id_bg], iso, datas[id_hg], datas[id_bg])
+		glVertex3f(
+				interpolatePos(x[id_hg], x[id_bg], v, datas[id_hg], datas[id_bg]),
+				interpolatePos(y[id_hg], y[id_bg], v, datas[id_hg], datas[id_bg]),
+				v/maxi - display_Z_correction
 			  );
 	}else{
-		glVertex2f(
-				interpolatePos(x[id_hd], x[id_bd], iso, datas[id_hd], datas[id_bd]),
-				interpolatePos(y[id_hd], y[id_bd], iso, datas[id_hd], datas[id_bd])
+		glVertex3f(
+				interpolatePos(x[id_hd], x[id_bd], v, datas[id_hd], datas[id_bd]),
+				interpolatePos(y[id_hd], y[id_bd], v, datas[id_hd], datas[id_bd]),
+				v/maxi - display_Z_correction
 			  );
 	}
 	glEnd();
@@ -132,41 +146,49 @@ void handleCase3(double v, int i, int j){
 	glBegin(GL_LINES);
 	if (datas[id_hg] > v){
 		//angle hg
-		glVertex2f(
-				interpolatePos(x[id_hg], x[id_hd], iso, datas[id_hg], datas[id_hd]),
-				interpolatePos(y[id_hg], y[id_hd], iso, datas[id_hg], datas[id_hd])
+		glVertex3f(
+				interpolatePos(x[id_hg], x[id_hd], v, datas[id_hg], datas[id_hd]),
+				interpolatePos(y[id_hg], y[id_hd], v, datas[id_hg], datas[id_hd]),
+				v/maxi - display_Z_correction
 			  );
-		glVertex2f(
-				interpolatePos(x[id_hg], x[id_bg], iso, datas[id_hg], datas[id_bg]),
-				interpolatePos(y[id_hg], y[id_bg], iso, datas[id_hg], datas[id_bg])
+		glVertex3f(
+				interpolatePos(x[id_hg], x[id_bg], v, datas[id_hg], datas[id_bg]),
+				interpolatePos(y[id_hg], y[id_bg], v, datas[id_hg], datas[id_bg]),
+				v/maxi - display_Z_correction
 			  );
 		//angle bd
-		glVertex2f(
-				interpolatePos(x[id_bd], x[id_hd], iso, datas[id_bd], datas[id_hd]),
-				interpolatePos(y[id_bd], y[id_hd], iso, datas[id_bd], datas[id_hd])
+		glVertex3f(
+				interpolatePos(x[id_bd], x[id_hd], v, datas[id_bd], datas[id_hd]),
+				interpolatePos(y[id_bd], y[id_hd], v, datas[id_bd], datas[id_hd]),
+				v/maxi - display_Z_correction
 			  );
-		glVertex2f(
-				interpolatePos(x[id_bd], x[id_bg], iso, datas[id_bd], datas[id_bg]),
-				interpolatePos(y[id_bd], y[id_bg], iso, datas[id_bd], datas[id_bg])
+		glVertex3f(
+				interpolatePos(x[id_bd], x[id_bg], v, datas[id_bd], datas[id_bg]),
+				interpolatePos(y[id_bd], y[id_bg], v, datas[id_bd], datas[id_bg]),
+				v/maxi - display_Z_correction
 			  );
 	}else{
 		//
-		glVertex2f(
-				interpolatePos(x[id_hd], x[id_hg], iso, datas[id_hd], datas[id_hg]),
-				interpolatePos(y[id_hd], y[id_hg], iso, datas[id_hd], datas[id_hg])
+		glVertex3f(
+				interpolatePos(x[id_hd], x[id_hg], v, datas[id_hd], datas[id_hg]),
+				interpolatePos(y[id_hd], y[id_hg], v, datas[id_hd], datas[id_hg]),
+				v/maxi - display_Z_correction
 			  );
-		glVertex2f(
-				interpolatePos(x[id_hd], x[id_bd], iso, datas[id_hd], datas[id_bd]),
-				interpolatePos(y[id_hd], y[id_bd], iso, datas[id_hd], datas[id_bd])
+		glVertex3f(
+				interpolatePos(x[id_hd], x[id_bd], v, datas[id_hd], datas[id_bd]),
+				interpolatePos(y[id_hd], y[id_bd], v, datas[id_hd], datas[id_bd]),
+				v/maxi - display_Z_correction
 			  );
 		//
-		glVertex2f(
-				interpolatePos(x[id_bg], x[id_hg], iso, datas[id_bg], datas[id_hg]),
-				interpolatePos(y[id_bg], y[id_hg], iso, datas[id_bg], datas[id_hg])
+		glVertex3f(
+				interpolatePos(x[id_bg], x[id_hg], v, datas[id_bg], datas[id_hg]),
+				interpolatePos(y[id_bg], y[id_hg], v, datas[id_bg], datas[id_hg]),
+				v/maxi - display_Z_correction
 			  );
-		glVertex2f(
-				interpolatePos(x[id_bg], x[id_bd], iso, datas[id_bg], datas[id_bd]),
-				interpolatePos(y[id_bg], y[id_bd], iso, datas[id_bg], datas[id_bd])
+		glVertex3f(
+				interpolatePos(x[id_bg], x[id_bd], v, datas[id_bg], datas[id_bd]),
+				interpolatePos(y[id_bg], y[id_bd], v, datas[id_bg], datas[id_bd]),
+				v/maxi - display_Z_correction
 			  );
 	}
 	glEnd();
@@ -181,22 +203,26 @@ void handleCase4(double v, int i, int j){
 	int id_bd = (i+1)*size+j;
 	glBegin(GL_LINES);
 	if ((datas[id_hg]-v > 0 && datas[id_hd]-v > 0) || (datas[id_hg]-v < 0 && datas[id_hd]-v < 0)){
-		glVertex2f(
-				interpolatePos(x[id_hg], x[id_bg], iso, datas[id_hg], datas[id_bg]),
-				interpolatePos(y[id_hg], y[id_bg], iso, datas[id_hg], datas[id_bg])
+		glVertex3f(
+				interpolatePos(x[id_hg], x[id_bg], v, datas[id_hg], datas[id_bg]),
+				interpolatePos(y[id_hg], y[id_bg], v, datas[id_hg], datas[id_bg]),
+				v/maxi - display_Z_correction
 			  );
-		glVertex2f(
-				interpolatePos(x[id_hd], x[id_bd], iso, datas[id_hd], datas[id_bd]),
-				interpolatePos(y[id_hd], y[id_bd], iso, datas[id_hd], datas[id_bd])
+		glVertex3f(
+				interpolatePos(x[id_hd], x[id_bd], v, datas[id_hd], datas[id_bd]),
+				interpolatePos(y[id_hd], y[id_bd], v, datas[id_hd], datas[id_bd]),
+				v/maxi - display_Z_correction
 			  );
 	}else{
-		glVertex2f(
-				interpolatePos(x[id_hg], x[id_hd], iso, datas[id_hg], datas[id_hd]),
-				interpolatePos(y[id_hg], y[id_hd], iso, datas[id_hg], datas[id_hd])
+		glVertex3f(
+				interpolatePos(x[id_hg], x[id_hd], v, datas[id_hg], datas[id_hd]),
+				interpolatePos(y[id_hg], y[id_hd], v, datas[id_hg], datas[id_hd]),
+				v/maxi - display_Z_correction
 			  );
-		glVertex2f(
-				interpolatePos(x[id_bg], x[id_bd], iso, datas[id_bg], datas[id_bd]),
-				interpolatePos(y[id_bg], y[id_bd], iso, datas[id_bg], datas[id_bd])
+		glVertex3f(
+				interpolatePos(x[id_bg], x[id_bd], v, datas[id_bg], datas[id_bd]),
+				interpolatePos(y[id_bg], y[id_bd], v, datas[id_bg], datas[id_bd]),
+				v/maxi - display_Z_correction
 			  );
 	}
 	glEnd();
@@ -218,14 +244,14 @@ void renderFunction(void){
 	glEnd();
 	// Label iso
 	char ch[20];
-	sprintf(ch, "%.2f", iso);
+	sprintf(ch, "%d", nb_iso);
 	glRasterPos2f(0, display_size+0.15);
 	glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, ch);
 
 	// each value has a dot and text
 	for(int i = 0 ; i < size*size; i++){
 		glBegin(GL_POINTS);
-		glVertex2f(x[i], y[i]);
+		glVertex3f(x[i], y[i], datas[i]/4*0.5);
 		glEnd();
 		if (display_number){
 			glRasterPos2f(x[i], y[i]);
@@ -234,10 +260,20 @@ void renderFunction(void){
 		}
 	}
 
+	double step = (maxi - mini) / nb_iso;
+	for (double i = mini+0.000001 ; i < maxi ; i += step){
+		drawIsoWith(i);
+	}
+
+	glutSwapBuffers();
+	glutPostRedisplay();
+}
+
+void drawIsoWith(double value){
 	for (int i = 0; i < size-1 ;i ++){
 		for (int j = 0; j < size-1 ; j++){
 			int c = chooseCase(
-					iso,
+					value,
 					datas[i*size+(j+1)],
 					datas[(i+1)*size+(j+1)],
 					datas[i*size+j],
@@ -248,22 +284,19 @@ void renderFunction(void){
 					//nothing todo
 					break;
 				case 2:
-					handleCase2(iso, i, j);
+					handleCase2(value, i, j);
 					break;
 				case 3:
-					handleCase3(iso, i, j);
+					handleCase3(value, i, j);
 					break;
 				case 4:
-					handleCase4(iso, i, j);
+					handleCase4(value, i, j);
 					break;
 				default:
 					fprintf(stderr, "error -> i:%d, j:%d \n",i,j);
 			}
 		}
 	}
-
-	glutSwapBuffers();
-	glutPostRedisplay();
 }
 
 void keyboard(unsigned char key, int x, int y){
@@ -278,13 +311,16 @@ void keyboard(unsigned char key, int x, int y){
 			display_number = (display_number+1)%2;
 			break;
 		case '+':
-			iso += 0.005;
+			nb_iso += 1;
 			break;
 		case '-':
-			iso -= 0.005;
+			nb_iso -= 1;
+			nb_iso = nb_iso < 0 ? 0: nb_iso;
 			break;
 		case 27: // Esc
 			exit(1);
+		default:
+			printf("%d\n", key);
 	}
 	glutPostRedisplay();
 }
