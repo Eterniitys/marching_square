@@ -261,9 +261,17 @@ void renderFunction(void){
 	}
 
 	double step = (maxi - mini) / nb_iso;
+	double color_step = 3.0f / nb_iso;
+	double c = 0;
 	for (double i = mini+0.000001 ; i < maxi ; i += step){
+		c < 1 ? glColor3f(0, 1-c, 0) :
+			c < 1.5 ? glColor3f(0, 0, (c-1)*2):
+			c < 2 ? glColor3f(0, 0, 1-(c-1.5)*2):
+			glColor3f(c-2, 0, 0);
 		drawIsoWith(i);
+		c+=color_step;
 	}
+	glColor3f(1, 1, 1);
 
 	glutSwapBuffers();
 	glutPostRedisplay();
